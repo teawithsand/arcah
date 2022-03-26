@@ -8,7 +8,7 @@ import (
 )
 
 type QueryReflector struct {
-	DescriptorComputer  *stdesc.Comptuer
+	DescriptorComputer  *stdesc.Computer
 	ReflectMongoQueries bool
 }
 
