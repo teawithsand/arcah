@@ -56,7 +56,7 @@ type DataPushInts struct {
 }
 
 func TestMutator_OnObject(t *testing.T) {
-	engine := mttor.NewDefaultMutatorEngine()
+	engine := mttor.NewDefaultEngine()
 	t.Run("set", func(t *testing.T) {
 		data := Data{}
 		err := engine.Mutate(context.Background(), &data, &DataSetText{
@@ -140,7 +140,7 @@ func TestMutator_OnObject(t *testing.T) {
 	})
 }
 
-func DoTestMutationOnMongo(t *testing.T, engine mttor.MongoMutatorEngine, data, mutation interface{}) {
+func DoTestMutationOnMongo(t *testing.T, engine mttor.Engine, mongoEngine mttor.MongoEngine, data, mutation interface{}) {
 	uri := os.Getenv("ARCAH_TEST_MONGO")
 	if len(uri) > 0 {
 		client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
@@ -170,7 +170,7 @@ func DoTestMutationOnMongo(t *testing.T, engine mttor.MongoMutatorEngine, data, 
 				return
 			}
 
-			renderedMutation, err := engine.RenderMongoMutation(ctx, reflect.TypeOf(data), mutation)
+			renderedMutation, err := mongoEngine.RenderMongoMutation(ctx, reflect.TypeOf(data), mutation)
 			if err != nil {
 				t.Error(err)
 				return
@@ -216,16 +216,17 @@ func TestMutator_WithMongo(t *testing.T) {
 		log.Default().Println("Note: omitting non-mongo tests")
 		return
 	}
-	engine := mttor.NewDefaultMutatorEngine()
+	engine := mttor.NewDefaultEngine()
+	mongoEngine := mttor.NewMongoEngine()
 
 	t.Run("set", func(t *testing.T) {
-		DoTestMutationOnMongo(t, engine, &Data{}, DataSetText{
+		DoTestMutationOnMongo(t, engine, mongoEngine, &Data{}, DataSetText{
 			Text: "asdf",
 		})
 	})
 
 	t.Run("inc", func(t *testing.T) {
-		DoTestMutationOnMongo(t, engine, &Data{
+		DoTestMutationOnMongo(t, engine, mongoEngine, &Data{
 			Number: 31,
 		}, DataIncNumber{
 			Number: 11,
@@ -246,7 +247,7 @@ func TestMutator_WithMongo(t *testing.T) {
 	*/
 
 	t.Run("push", func(t *testing.T) {
-		DoTestMutationOnMongo(t, engine, &Data{
+		DoTestMutationOnMongo(t, engine, mongoEngine, &Data{
 			Ints: []int{1, 2, 3},
 		}, DataPushInt{
 			Value: 4,
@@ -254,7 +255,7 @@ func TestMutator_WithMongo(t *testing.T) {
 	})
 
 	t.Run("push_many", func(t *testing.T) {
-		DoTestMutationOnMongo(t, engine, &Data{
+		DoTestMutationOnMongo(t, engine, mongoEngine, &Data{
 			Ints: []int{1, 2, 3},
 		}, DataPushInts{
 			Values: []int{4, 5, 6},

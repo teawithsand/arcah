@@ -3,7 +3,7 @@ package mttor
 import (
 	"strings"
 
-	"github.com/teawithsand/reval/jsonutil"
+	"github.com/teawithsand/arcah/internal/refutil"
 )
 
 const defaultMutatorTagName = "mttor"
@@ -43,6 +43,8 @@ type mutatorMeta struct {
 	TargetMutationArgs MutationArgs
 }
 
+// TODO(teawithsand): use reval tag parsing here
+
 func (mm *mutatorMeta) ParseTag(tags string) (err error) {
 	values := strings.Split(tags, ",")
 	if len(values) >= 1 {
@@ -55,7 +57,6 @@ func (mm *mutatorMeta) ParseTag(tags string) (err error) {
 	args := MutationArgs{}
 
 	if len(values) >= 3 {
-		// TODO(teawithsand): enginem which allows
 		for _, v := range values[2:] {
 			res := strings.SplitN(v, ":", 1)
 			if len(res) == 2 {
@@ -72,21 +73,13 @@ func (mm *mutatorMeta) ParseTag(tags string) (err error) {
 }
 
 type mutatorTargetMeta struct {
-	BSONFieldName string
-	Skip          bool
+	refutil.BSONFieldMeta
 }
 
 func (mtm *mutatorTargetMeta) ParseTag(bsonTags string) (err error) {
-	bsonFieldName, ok := jsonutil.GetJSONFieldName(bsonTags)
-	if !ok {
+	err = mtm.BSONFieldMeta.ParseTag(bsonTags)
+	if err != nil {
 		return
 	}
-
-	if len(bsonFieldName) == 0 {
-		mtm.Skip = true
-		return
-	}
-
-	mtm.BSONFieldName = bsonFieldName
 	return
 }
