@@ -4,6 +4,7 @@
 For now arcah api is in development and will change.
 Also, query engine is not yet stable and tested enough to run.
 
+## What is arcah?
 Have you ever written DTOs? In golang it's tedious to write functions like 
 ApplyMutation for each DTO, consider following example:
 
